@@ -3,6 +3,16 @@ import subprocess
 import os
 import pyperclip
 import random
+import requests
+print('公告信息')
+print('--------------------------------------------------------')
+url = 'http://api.lmbaka.top:114/frp/information'
+response = requests.get(url)
+if response.status_code == 200:
+    print(response.text)
+else:
+    print('请求失败，无法获取公告信息')
+print('--------------------------------------------------------')
 print('正在寻找Minecraft开放的端口...')
 def get_open_ports():
     all_processes = psutil.process_iter()
@@ -27,8 +37,8 @@ def start_frpc(minecraft_port, external_port):
     # 清除 frpc.ini 文件内容
     with open("frpc.ini", mode="w") as f:
         f.write("[common]\n")
-        f.write("server_addr = 127.0.0.1\n") #填写你的FRPS服务器端口
-        f.write("server_port = 7000\n")  #填写FRPs端口
+        f.write("server_addr = gyfrp.lmbaka.top\n")
+        f.write("server_port = 54001\n")
 
     name = "tunnel" + str(os.urandom(4).hex().upper())
 
@@ -62,11 +72,11 @@ open_ports = get_open_ports()
 if len(open_ports) == 1:
     for port in open_ports:
         print('检测到Minecraft开放端口:'+str(port))
-        ranport = random.randint(54000, 55000)  #开放的端口
+        ranport = random.randint(54000, 55000)
         start_frpc(port, ranport)
 else:
     print("未找到Minecraft的开放端口或者有多个不同端口,你需要手动输入端口号")
     minecraft_port = input("请输入 Minecraft 端口号：")
     external_port = input("请输入外部端口号：")
-    ranport = random.randint(54000, 55000)  #开放的端口
+    ranport = random.randint(54000, 55000)
     start_frpc(minecraft_port, ranport)
