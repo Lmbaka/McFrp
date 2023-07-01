@@ -40,10 +40,13 @@ def get_open_ports():
 
     return open_ports
 
-def input_port(desc: str, error_desc: str, start: int=0, end: int=65535):
+def input_port(desc: str, error_desc: str, start: int=0, end: int=65535, empty_random: bool=False):
     while (True):
         try:
-            port = int(input(desc))
+            port = input(desc)
+            if (empty_random and len(port) <= 0):
+                return random.randint(start, end)
+            port = int(port)
             if not (start <= port <= end):
                 print(error_desc)
                 continue
@@ -87,17 +90,19 @@ remote_port = {external_port}
     for line in iter(frpc_process.stdout.readline, b''):
         print(line.decode('utf-8').strip())
 
+def main():
+    open_ports = get_open_ports()
 
-open_ports = get_open_ports()
+    if len(open_ports) == 1:
+        for port in open_ports:
+            print('检测到Minecraft开放端口:'+str(port))
+            external_port = input_port("请输入外部端口号, 应当为 54000-55000 的整数 (直接回车以随机)：", "您输入的端口号有误, 请重新输入", 54000, 55000, True)
+            start_frpc(port, external_port)
+    else:
+        print("未找到Minecraft的开放端口或者有多个不同端口,你需要手动输入端口号")
+        minecraft_port = input_port("请输入 Minecraft 端口号：", "您输入的端口号有误, 请重新输入")
+        external_port = input_port("请输入外部端口号, 应当为 54000-55000 的整数 (直接回车以随机)：", "您输入的端口号有误, 请重新输入", 54000, 55000, True)
+        start_frpc(minecraft_port, external_port)
 
-if len(open_ports) == 1:
-    for port in open_ports:
-        print('检测到Minecraft开放端口:'+str(port))
-        ranport = random.randint(54000, 55000)
-        start_frpc(port, ranport)
-else:
-    print("未找到Minecraft的开放端口或者有多个不同端口,你需要手动输入端口号")
-    minecraft_port = input_port("请输入 Minecraft 端口号：", "您输入的端口号有误, 请重新输入")
-    external_port = input_port("请输入外部端口号, 应当为 54000-55000 的整数：", "您输入的端口号有误, 请重新输入", 54000, 55000)
-    ranport = random.randint(54000, 55000)
-    start_frpc(minecraft_port, ranport)
+if __name__ == '__main__':
+    main()
