@@ -4,11 +4,19 @@ import os
 import pyperclip
 import random
 import requests
+
+def get(url, *args, **kwargs):
+    try:
+        return requests.get(url, *args, **kwargs)
+    except Exception as e:
+        print('请求失败: {}'.format(e))
+        return None
+
 print('公告信息')
 print('--------------------------------------------------------')
 url = 'http://api.lmbaka.top:114/frp/information'
-response = requests.get(url)
-if response.status_code == 200:
+response = get(url)
+if response and response.status_code == 200:
     print(response.text)
 else:
     print('请求失败，无法获取公告信息')
@@ -32,6 +40,17 @@ def get_open_ports():
 
     return open_ports
 
+def input_port(desc: str, error_desc: str, start: int=0, end: int=65535):
+    while (True):
+        try:
+            port = int(input(desc))
+            if not (start <= port <= end):
+                print(error_desc)
+                continue
+            return port
+        except ValueError:  # 输入内容无法转为 int
+            print(error_desc)
+            continue
 
 def start_frpc(minecraft_port, external_port):
     # 清除 frpc.ini 文件内容
@@ -67,6 +86,8 @@ remote_port = {external_port}
     # 输出日志信息到控制台
     for line in iter(frpc_process.stdout.readline, b''):
         print(line.decode('utf-8').strip())
+
+
 open_ports = get_open_ports()
 
 if len(open_ports) == 1:
@@ -76,7 +97,7 @@ if len(open_ports) == 1:
         start_frpc(port, ranport)
 else:
     print("未找到Minecraft的开放端口或者有多个不同端口,你需要手动输入端口号")
-    minecraft_port = input("请输入 Minecraft 端口号：")
-    external_port = input("请输入外部端口号：")
+    minecraft_port = input_port("请输入 Minecraft 端口号：", "您输入的端口号有误, 请重新输入")
+    external_port = input_port("请输入外部端口号, 应当为 54000-55000 的整数：", "您输入的端口号有误, 请重新输入", 54000, 55000)
     ranport = random.randint(54000, 55000)
     start_frpc(minecraft_port, ranport)
