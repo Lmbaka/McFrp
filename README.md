@@ -1,2 +1,5 @@
 # McFrp
-python编写,frp为主
+PYTHON环境
+构建：
+pip install pyinstaller
+pyinstaller -F main.py
